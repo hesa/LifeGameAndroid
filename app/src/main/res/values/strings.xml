@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">LifeGame</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_games">Games</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="your_things_title">Your things</string>
+    <string name="room_tings_title">Things in situation</string>
+</resources>

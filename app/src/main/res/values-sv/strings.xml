@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LifeGame</string>
+    <string name="action_games">Spel</string>
+    <string name="action_refresh">Uppdatera</string>
+    <string name="action_settings">Inställningar</string>
+    <string name="room_tings_title">Saker i rummet</string>
+    <string name="your_things_title">Saker i rummet</string>
+</resources>
