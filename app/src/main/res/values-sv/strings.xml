@@ -6,4 +6,21 @@
     <string name="action_settings">Inställningar</string>
     <string name="room_tings_title">Saker i rummet</string>
     <string name="your_things_title">Saker i rummet</string>
+    <string name="quit_game_question">Vill du avsluta spelet?</string>
+    <string name="action_exitgame">Avsluta speleet</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nej</string>
+    <string name="leaving_game">Avslutar spelet</string>
+    <string name="action_cheats">Fusk</string>
+    <string name="action_points">Visa poäng</string>
+    <string name="points">Spelpoäng</string>
+    <string name="action_share">Länkar och delning</string>
+    <string name="admin_page_web">Admin-sida (web)</string>
+    <string name="go_to_web">Gå till webversion</string>
+    <string name="email_web_link">Email web link</string>
+    <string name="copy_link">Kopiera länk</string>
+    <string name="status">Status</string>
+    <string name="show_log_devel">Visa log (utvecklar)</string>
+    <string name="clean">Rensa gamla spel</string>
+
 </resources>

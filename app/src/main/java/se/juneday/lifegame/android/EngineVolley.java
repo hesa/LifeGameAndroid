@@ -1,3 +1,20 @@
+/*
+ *    Copyright (C) 2019 Henrik Sandklef
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package se.juneday.lifegame.android;
 
 import android.content.Context;
@@ -16,11 +33,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import se.juneday.Session;
 import se.juneday.lifegame.domain.Situation;
 import se.juneday.lifegame.domain.Suggestion;
 import se.juneday.lifegame.domain.ThingAction;
@@ -32,8 +51,9 @@ public class EngineVolley {
     private static EngineVolley instance;
     private SituationChangeListener listener;
 
-//    private String baseUrl = "http://10.0.2.2:8080";
-    private String baseUrl = "http://rameau.sandklef.com:8081";
+   private String baseUrl = "http://10.0.2.2:8080";
+//    private String baseUrl = "http://192.168.1.138:8080";
+//    private String baseUrl = "http://rameau.sandklef.com:8081";
     private String gameUrl = "lifegame";
     private String formatUrl = "format=json";
     private String URL_SEP = "/";
@@ -45,16 +65,29 @@ public class EngineVolley {
     }
 
     public static synchronized EngineVolley getInstance(Context context) {
-        if (instance==null) {
+        if (instance == null) {
             instance = new EngineVolley(context);
         }
         return instance;
     }
 
+    public String webUrl(String gameId) {
+        return baseUrl + URL_SEP + gameUrl + "?gameId=" + gameId + "&format=html";
+    }
+
+    public String webAdminUrl(String gameId) {
+        return baseUrl + URL_SEP + gameUrl + "?gameId=" + gameId + "&format=html&admin=true";
+    }
+
     public interface SituationChangeListener {
         void onSituationChangeList(Situation situation);
+
+        void onGameExit();
+
         void onVictory(String message);
+
         void onError(String message);
+
         void onGamesChange(List<GameInfo> games);
     }
 
@@ -63,7 +96,7 @@ public class EngineVolley {
     }
 
     private String baseUrl(String gameId) {
-        return baseUrl +  URL_SEP + gameUrl + "?gameId=" + gameId;
+        return baseUrl + URL_SEP + gameUrl + "?gameId=" + gameId;
     }
 
     private String formatUrl(String gameId) {
@@ -75,23 +108,23 @@ public class EngineVolley {
     }
 
     private String currentUrl(String gameId) throws UnsupportedEncodingException {
-        return formatUrl(gameId) +"&action=current";
+        return formatUrl(gameId) + "&action=current";
     }
 
     private String newGameUrl(String world) throws UnsupportedEncodingException {
-        return baseUrl + URL_SEP + gameUrl  + "?" + formatUrl + "&world=" + world;
+        return baseUrl + URL_SEP + gameUrl + "?" + formatUrl + "&world=" + world;
     }
 
     private String takeThingUrl(String gameId, String thing) throws UnsupportedEncodingException {
-        return formatUrl(gameId) +"&pickup=" + thing;
+        return formatUrl(gameId) + "&pickup=" + thing;
     }
 
     private String dropThingUrl(String gameId, String thing) throws UnsupportedEncodingException {
-        return formatUrl(gameId) +"&drop=" + thing;
+        return formatUrl(gameId) + "&drop=" + thing;
     }
 
     private String gamesUrl() throws UnsupportedEncodingException {
-        return baseUrl + URL_SEP +gameUrl + "?worlds=true&format=json";
+        return baseUrl + URL_SEP + gameUrl + "?worlds=true&format=json";
     }
 
     private String exitUrl(String gameId) {
@@ -99,26 +132,29 @@ public class EngineVolley {
     }
 
     public void exitGame(String gameId) {
+        Log.d(LOG_TAG, "exitGame: " + gameId);
+        Log.d(LOG_TAG, "exitGame: " + exitUrl(gameId));
         RequestQueue queue = Volley.newRequestQueue(context);
-        JsonArrayRequest jsonArrayRequest = null;
-        jsonArrayRequest = new JsonArrayRequest(
+        JsonObjectRequest jsonObjectRequest = null;
+        jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
                 exitUrl(gameId),
                 null,
-                new Response.Listener<JSONArray>() {
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject response) {
                         Log.d(LOG_TAG, "exitGame: " + response);
+                        listener.onGameExit();
                     }
                 }, new Response.ErrorListener() {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d(LOG_TAG, "exitGame() failed");
+                Log.d(LOG_TAG, "exitGame() failed: " + error);
             }
         });
         // Add the request to the RequestQueue.
-        queue.add(jsonArrayRequest);
+        queue.add(jsonObjectRequest);
     }
 
     public void getGames() {
@@ -148,7 +184,7 @@ public class EngineVolley {
 
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d(LOG_TAG, "getGames() failed: " + error ) ;
+                Log.d(LOG_TAG, "getGames() failed: " + error);
                 handleError(error, listener);
             }
         });
@@ -186,23 +222,24 @@ public class EngineVolley {
     public void getData(String url) {
         RequestQueue queue = Volley.newRequestQueue(context);
         JsonObjectRequest jsonObjectRequest = null;
-            jsonObjectRequest = new JsonObjectRequest(
-                    Request.Method.GET,
-                    url,
-                    null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            handleResponse(response, listener);
+        Log.d(LOG_TAG, "url: " + url);
+        jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        handleResponse(response, listener);
 //                            listener.onSituationChangeList(jsonToSituation(response));
-                        }
-                    }, new Response.ErrorListener() {
+                    }
+                }, new Response.ErrorListener() {
 
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    handleError(error, listener);
-                }
-            });
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                handleError(error, listener);
+            }
+        });
         // Add the request to the RequestQueue.
         queue.add(jsonObjectRequest);
     }
@@ -234,7 +271,7 @@ public class EngineVolley {
                 String subTitle = jo.getString("subtitle");
                 String url = jo.getString("url");
                 games.add(new GameInfo(title, subTitle, url));
-                Log.d(LOG_TAG, "Adding games ---- " + title);
+                Log.d(LOG_TAG, "Adding games ---- " + title + " (" + subTitle + ")");
             }
             Log.d(LOG_TAG, "Adding games ---- return " + games.size());
             return games;
@@ -254,7 +291,7 @@ public class EngineVolley {
             return new ArrayList<ThingAction>();
         }
 
-        if (jarray==null) {
+        if (jarray == null) {
             return new ArrayList<ThingAction>();
         }
 
@@ -276,16 +313,27 @@ public class EngineVolley {
 
     public Situation jsonToSituation(JSONObject response) throws JSONException {
 //     public Situation(String title, String description, String question, List<Suggestion> suggestions, List<ThingAction> actions) {
-        String gameTitle = jsonToString(response,"gametitle");
+        String gameTitle = jsonToString(response, "gametitle");
         String gameSubTitle = jsonToString(response, "gamesubtitle");
         String title = jsonToString(response, "title");
         String gameId = jsonToString(response, "gameid");
-        String question = jsonToString(response,"question");
+        String question = jsonToString(response, "question");
         String description = jsonToString(response, "description");
         List<ThingAction> things = jsonToThings(response, "things");
-        List<ThingAction> actions = jsonToThings(response,"actions");
+        List<ThingAction> actions = jsonToThings(response, "actions");
         List<Suggestion> suggestions = jsonToSuggestions(response.getJSONArray("suggestions"));
-        return new Situation(gameTitle, gameSubTitle, gameId, title, description, question, suggestions, actions, things, response.getString("explanation"));
+        long millis = response.getLong("millisleft");
+        Log.d(LOG_TAG, "expires: " + millis);
+        int score = response.getInt("score");
+        int situationCount = response.getInt("situationcount");
+        Log.d(LOG_TAG, "jsonToSituation()   " + gameId);
+
+        Situation situation = new Situation(gameTitle, gameSubTitle, gameId, title, description,
+                question, suggestions, actions, things, response.getString("explanation"),
+                millis, score, situationCount);
+        Log.d(LOG_TAG, "jsonToSituation()   " + situation.gameId() + " " + situation.score());
+
+        return situation;
     }
 
     private String jsonToString(JSONObject jo, String tag) {
@@ -307,19 +355,21 @@ public class EngineVolley {
     }
 */
 
-    private Situation handleSituation(JSONObject response, SituationChangeListener listener){
+    private Situation handleSituation(JSONObject response, SituationChangeListener listener) {
         try {
+            Log.d(LOG_TAG, "handleSituation()");
             //extractUpdateGameId(response);
             Situation situation = jsonToSituation(response);
+            Log.d(LOG_TAG, "handleSituation()  calling onSituationChangeList :: " + situation);
             listener.onSituationChangeList(situation);
             return situation;
         } catch (JSONException e) {
-          //  e.printStackTrace();
+            //  e.printStackTrace();
         }
         return null;
     }
 
-    private String handleEndOfGame(JSONObject response, SituationChangeListener listener){
+    private String handleEndOfGame(JSONObject response, SituationChangeListener listener) {
         try {
             String message = response.getString("end");
             listener.onVictory(message);
@@ -330,7 +380,7 @@ public class EngineVolley {
         return null;
     }
 
-    private String handleError(JSONObject response, SituationChangeListener listener){
+    private String handleError(JSONObject response, SituationChangeListener listener) {
         try {
             String message = response.getString("error");
             listener.onError(message);
@@ -353,13 +403,13 @@ public class EngineVolley {
         }
         if (handleError(response, listener) != null) {
             Log.d(LOG_TAG, " response: handled error");
-            Log.d(LOG_TAG, "Found error...." );
+            Log.d(LOG_TAG, "Found error....");
             return;
         }
     }
 
     private void handleError(VolleyError error, SituationChangeListener listener) {
-        if (error.getCause()!=null) {
+        if (error.getCause() != null) {
             Log.d(LOG_TAG, " cause: " + error.getCause().getMessage());
         } else {
             Log.d(LOG_TAG, " cause: " + error.getMessage());
@@ -368,7 +418,7 @@ public class EngineVolley {
     }
 
     public void getGame(String world) {
-        Log.d(LOG_TAG, "getGame(" + world+")    world: " + world);
+        Log.d(LOG_TAG, "getGame(" + world + ")    world: " + world);
         try {
             String url = newGameUrl(world);
             getData(url);
@@ -378,7 +428,7 @@ public class EngineVolley {
     }
 
     public void takeThing(String gameId, String thing) {
-        Log.d(LOG_TAG, "takeThing(" + thing+")");
+        Log.d(LOG_TAG, "takeThing(" + thing + ")");
         try {
             String url = takeThingUrl(gameId, thing);
             getData(url);
@@ -388,7 +438,7 @@ public class EngineVolley {
     }
 
     public void dropThing(String gameId, String thing) {
-        Log.d(LOG_TAG, "dropThing(" + thing+")");
+        Log.d(LOG_TAG, "dropThing(" + thing + ")");
         try {
             String url = dropThingUrl(gameId, thing);
             getData(url);
@@ -398,14 +448,21 @@ public class EngineVolley {
     }
 
 
-    public static class GameInfo {
+    public static class GameInfo implements Serializable {
+        private static final long serialVersionUID = -5098838482768516652L;
         public String title;
         public String subTitle;
         public String url;
-        public GameInfo(String title, String subTtle, String url) {
+
+        public GameInfo(String title, String subTitle, String url) {
             this.title = title;
             this.subTitle = subTitle;
             this.url = url;
         }
+
+        public String toString() {
+            return "<h1>" + title + "</h1>\n" + subTitle;
+        }
+
     }
 }

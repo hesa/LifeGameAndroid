@@ -4,24 +4,102 @@
     tools:context="se.juneday.lifegame.android.MainActivity">
 
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" ></item>
-
-    <item
-        android:id="@+id/action_refresh"
-        android:orderInCategory="100"
-        android:title="@string/action_refresh"
-        app:showAsAction="never" ></item>
-
-    <item
         android:id="@+id/action_games"
         android:orderInCategory="100"
         android:title="@string/action_games"
         app:showAsAction="never" >
-    <menu>
-    </menu>
+<!--        <menu>
+
+
+        </menu>
+        -->
     </item>
 
+    <item
+        android:id="@+id/action_exitgame"
+        android:orderInCategory="100"
+        android:title="@string/action_exitgame"
+        android:icon="@mipmap/baseline_stop_white_18dp"
+        app:showAsAction="never" >
+    </item>
+
+    <item
+        android:id="@+id/action_refresh"
+        android:orderInCategory="100"
+        android:icon="@mipmap/baseline_refresh_white_18dp"
+        android:title="@string/action_refresh"
+        app:showAsAction="never">
+    </item>
+
+
+    <!--
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        app:showAsAction="never" ></item>
+-->
+
+    <!--
+        <item
+            android:id="@+id/action_cheats"
+            android:orderInCategory="100"
+            android:title="@string/action_cheats"
+            app:showAsAction="never" >
+            <menu>
+            </menu>
+        </item>
+    -->
+    <item
+        android:id="@+id/action_status"
+        android:orderInCategory="100"
+        android:title="@string/status"
+        app:showAsAction="never">
+    </item>
+
+    <item
+        android:id="@+id/action_share"
+        android:orderInCategory="100"
+        android:title="@string/action_share"
+        app:showAsAction="never" >
+        <menu>
+            <item
+                android:id="@+id/action_web"
+                android:orderInCategory="100"
+                android:title="@string/go_to_web"
+                app:showAsAction="never">
+            </item>
+            <item
+                android:id="@+id/action_copy"
+                android:orderInCategory="100"
+                android:title="@string/copy_link"
+                app:showAsAction="never">
+            </item>
+            <item
+                android:id="@+id/action_web_admin"
+                android:orderInCategory="100"
+                android:title="@string/admin_page_web"
+                app:showAsAction="never">
+            </item>
+            <item
+                android:id="@+id/action_email"
+                android:orderInCategory="100"
+                android:title="@string/email_web_link"
+                app:showAsAction="never">
+            </item>
+
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_clean"
+        android:orderInCategory="100"
+        android:title="@string/clean"
+        app:showAsAction="never">
+    </item>
+    <item
+        android:id="@+id/action_log"
+        android:orderInCategory="100"
+        android:title="@string/show_log_devel"
+        app:showAsAction="never">
+    </item>
 </menu>

@@ -5,4 +5,22 @@
     <string name="action_refresh">Refresh</string>
     <string name="your_things_title">Your things</string>
     <string name="room_tings_title">Things in situation</string>
+    <string name="action_exitgame">Exit game</string>
+    <string name="quit_game_question">Do you want to quit the current game?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="leaving_game">Quitting game</string>
+    <string name="action_cheats">Cheat</string>
+    <string name="action_points">Show score</string>
+    <string name="points">Game score</string>
+    <string name="action_share">Links and Share</string>
+    <string name="admin_page_web">Admin page (web)</string>
+    <string name="go_to_web">Go to web version</string>
+    <string name="email_web_link">Email link to game</string>
+    <string name="copy_link">Copy link to game</string>
+    <string name="status">Status</string>
+    <string name="show_log_devel">Show Log (devel)</string>
+    <string name="clean">Clean</string>
+    <string name="title_activity_world_choice">WorldChoiceActivity</string>
+    <string name="world_list_title">Games</string>
 </resources>
