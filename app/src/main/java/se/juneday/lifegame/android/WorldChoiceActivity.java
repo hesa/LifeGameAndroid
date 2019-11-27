@@ -66,6 +66,10 @@ public class WorldChoiceActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
+        Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mActionBarToolbar);
+        getSupportActionBar().setTitle(getResources().getString(R.string.app_name) + " - " + getResources().getString(R.string.world_act_name) );
+
     }
 
 
@@ -79,6 +83,7 @@ public class WorldChoiceActivity extends AppCompatActivity {
             finish();
         }
         Log.d(LOG_TAG, "onStart()  session is: " + session);
+
         this.games = session.games();
         if (session.games() != null) {
             Log.d(LOG_TAG, "onStart()  add items");
@@ -88,7 +93,6 @@ public class WorldChoiceActivity extends AppCompatActivity {
         }
         Log.d(LOG_TAG, "");
         fillListView(session.games());
-
     }
 
 
@@ -148,8 +152,6 @@ public class WorldChoiceActivity extends AppCompatActivity {
             this.context = context;
             this.items = items;
         }
-
-
 
         public View getView(int position, View view, ViewGroup parent) {
             LayoutInflater inflater=context.getLayoutInflater();
