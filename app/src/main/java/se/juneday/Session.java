@@ -89,6 +89,7 @@ public class Session implements Serializable {
         Log.d(LOG_TAG, "---> cleanCache()");
         logCache();
         worldGameId.clear();
+        currentWorld=null;
         logCache();
         Log.d(LOG_TAG, "<--- cleanCache()");
     }
@@ -105,14 +106,14 @@ public class Session implements Serializable {
         Log.d(LOG_TAG, "currentId(): " + currentWorld);
         Log.d(LOG_TAG, "currentId(): " + worldGameId);
         Log.d(LOG_TAG, "currentId(): " + worldGameId.get(currentWorld));
-        if (currentWorld==null || worldGameId.get(currentWorld)==null) {
+        if (worldGameId==null || currentWorld==null || worldGameId.get(currentWorld)==null) {
             return null;
         }
         return worldGameId.get(currentWorld).gameId;
     }
 
     public String id(String world) {
-        if (world==null || worldGameId.get(world)==null) {
+        if (world==null || worldGameId == null || worldGameId.get(world)==null) {
             return null;
         }
         return worldGameId.get(world).gameId;
