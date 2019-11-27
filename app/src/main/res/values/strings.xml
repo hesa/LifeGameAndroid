@@ -23,4 +23,15 @@
     <string name="clean">Clean</string>
     <string name="title_activity_world_choice">WorldChoiceActivity</string>
     <string name="world_list_title">Games</string>
+    <string name="world_act_name">Worlds</string>
+    <string name="update_game">Updating list of games and current situation.</string>
+    <string name="continue_prev_situation">Continuing previous instance of</string>
+    <string name="playing_from_scratch_1">Playing</string>
+    <string name="playing_from_scratch_2">from scratch.</string>
+    <string name="no_stored_game">No stored game for</string>
+    <string name="starting_a_new_game">Starting a new game.</string>
+    <string name="no_game_selected">No game selected</string>
+    <string name="refresh_and_choose_game">Refresh and choose a game using the menu.</string>
+    <string name="congratulations">Congratulations!</string>
+    <string name="managed_to_win">You managed to finish the game.</string>
 </resources>
