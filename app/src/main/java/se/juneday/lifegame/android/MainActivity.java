@@ -30,6 +30,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import android.speech.tts.TextToSpeech;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -152,7 +154,13 @@ public class MainActivity extends AppCompatActivity {
         if (Session.getInstance().id(gi.title) != null) {
             Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " already being played");
             // game already being played
-            if (Session.getInstance().currentWorld.equals(gi.title)) {
+            if (Session.getInstance() == null
+                    || (Session.getInstance().currentWorld==null)) {
+                Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " current bailed out");
+                showNoGame();
+            }
+            Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " continue check");
+            if (Session.getInstance().currentWorld!=null && Session.getInstance().currentWorld.equals(gi.title)) {
                 Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " already being played | same game => restart");
                 // current game is the requested, assuming use wants a new start - still, ask a question
                 exitGameQuestion(gi.url);
@@ -162,13 +170,13 @@ public class MainActivity extends AppCompatActivity {
                 if (Session.getInstance().id(gi.title) != null) {
                     Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " already being played | new game | old id => keep playing");
                     // existing game id, keep playing
-                    showExplanation("Continuing previous instance of " + gi.title + ".");
+                    showExplanation(getResources().getString(R.string.continue_prev_situation) + gi.title + ".");
                     getSituation(Session.getInstance().id(gi.title));
 
                 } else {
                     Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " already being played | new game | no id => start new");
                     // no existing id - start a new game
-                    showExplanation("No stored game for " + gi.title + ". Starting a new game.");
+                    showExplanation(getResources().getString(R.string.no_stored_game) + gi.title + "." + getResources().getString(R.string.starting_a_new_game));
                     // start new game
                     startNewGame(gi.url);
                 }
@@ -279,13 +287,15 @@ public class MainActivity extends AppCompatActivity {
     private void showNoGame() {
         Log.d(LOG_TAG, "showNoGame()");
         initViews();
-        setTextFields("No game selected", "\n\nRefresh and choose a game using the menu.");
+        setTextFields(getResources().getString(R.string.no_game_selected),
+                "\n\n" + getResources().getString(R.string.refresh_and_choose_game));
     }
 
     private void showWin(String message) {
         Log.d(LOG_TAG, "showWin()");
         initViews();
-        setTextFields("Congratulations!", "You managed to finish the game.\n\n" + message);
+        setTextFields(getResources().getString(R.string.congratulations),
+                getResources().getString(R.string.managed_to_win) + "\n\n" + message);
     }
 
     private void getGames() {
@@ -349,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void setTextFields(String title, String description) {
+
         setText(R.id.title_view, title);
         setText(R.id.description_view, description);
     }
@@ -378,7 +389,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void setText(int id, String text) {
         TextView tv = findViewById(id);
-        tv.setText(text);
+//        tv.setText(text);
+        tv.setText(Html.fromHtml(text));
+        tv.setClickable(true);
+        tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     private void fillActionView(final List<String> items) {
@@ -615,13 +629,14 @@ public class MainActivity extends AppCompatActivity {
 
         } else if (id==R.id.action_clean) {
             Session.getInstance().cleanCache();
+            currentSituation();
             return true;
         } else if (id==R.id.action_refresh) {
-            showExplanation("Updating list of games and current situation.");
+            showExplanation(getResources().getString(R.string.update_game));
             getGames();
             getSituation(Session.getInstance().currentId());}
         else if (id==R.id.action_games) {
-            showExplanation("Games.");
+           // showExplanation("Games.");
             Intent intent = new Intent(this, WorldChoiceActivity.class);
             startActivity(intent);
         } else if (Session.getInstance().games() != null) {
@@ -643,12 +658,12 @@ public class MainActivity extends AppCompatActivity {
                             if (Session.getInstance().id(gi.title) != null) {
                                 Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " already being played | new game | old id => keep playing");
                                 // existing game id, keep playing
-                                showExplanation("Continuing previous instance of " + gi.title + ".");
+                                showExplanation(getResources().getString(R.string.continue_prev_situation) + gi.title + ".");
                                 getSituation(Session.getInstance().id(gi.title));
                             } else {
                                 Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " already being played | new game | no id => start new");
                                 // no existing id - start a new game
-                                showExplanation("No stored game for " + gi.title + ". Starting a new game.");
+                                showExplanation(getResources().getString(R.string.no_stored_game) + gi.title + ". Starting a new game.");
                                 // start new game
                                 startNewGame(gi.url);
                             }
@@ -656,7 +671,7 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
                         Log.d(LOG_TAG, "onOptionsItemSelected() game " + gi.title + " already being played | new game | Never played game");
-                        showExplanation("Playing " + gi.title + " from scratch.");
+                        showExplanation(getResources().getString(R.string.playing_from_scratch_1) + gi.title + getResources().getString(R.string.playing_from_scratch_2));
                         startNewGame(gi.url);
                     }
                     break;
