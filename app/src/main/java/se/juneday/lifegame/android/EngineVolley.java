@@ -48,7 +48,7 @@ public class EngineVolley {
 
     private static final String LOG_TAG = EngineVolley.class.getSimpleName();
     private Context context;
-    private static EngineVolley instance;
+ //   private static EngineVolley instance;
     private SituationChangeListener listener;
 
    private String baseUrl = "http://10.0.2.2:8080";
@@ -60,16 +60,17 @@ public class EngineVolley {
 
 //    private String gameId;
 
-    private EngineVolley(Context context) {
+    public EngineVolley(Context context) {
         this.context = context;
     }
 
-    public static synchronized EngineVolley getInstance(Context context) {
+/*    public static synchronized EngineVolley getInstance() {
         if (instance == null) {
-            instance = new EngineVolley(context);
+            instance = new EngineVolley();
         }
         return instance;
     }
+*/
 
     public String webUrl(String gameId) {
         return baseUrl + URL_SEP + gameUrl + "?gameId=" + gameId + "&format=html";
