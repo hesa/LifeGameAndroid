@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private Situation lastSituation;
     private boolean bundleSupplied;
     private WinInformationHolder winHolder;
+    private EngineVolley volley;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
             bundleSupplied = false;
         }
 
-
         setContentView(R.layout.activity_main_port);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -100,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
         //       Log.d(LOG_TAG, " init views");
 //        initViews();
 
+
+        volley = new EngineVolley(this);
 
         setupWorld(gi);
     }
@@ -203,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerListener() {
         Log.d(LOG_TAG, " register listener");
-        EngineVolley.getInstance(this).setSituationChangeListener(new EngineVolley.SituationChangeListener() {
+        volley.setSituationChangeListener(new EngineVolley.SituationChangeListener() {
             @Override
             public void onSituationChangeList(Situation situation) {
                 winHolder = null;
@@ -302,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void getGames() {
         Log.d(LOG_TAG, "getGames()");
-        EngineVolley.getInstance(this).getGames();
+        volley.getGames();
     }
 
     private void currentSituation() {
@@ -312,11 +314,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void getSituation(String id) {
         Log.d(LOG_TAG, "currentSituation(" + id + ")");
-        EngineVolley.getInstance(this).currentSituation(id);
+        volley.currentSituation(id);
     }
 
     private void exitGame() {
-        EngineVolley.getInstance(this).exitGame(Session.getInstance().currentId());
+        volley.exitGame(Session.getInstance().currentId());
         Session.getInstance().removeCurrentGame();
         worldTitle = null;
         updateToolbarTitle();
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
             currentSituation();
         } else {
             Log.d(LOG_TAG, "startNewGame(" + world + ")  getGame()");
-            EngineVolley.getInstance(this).getGame(world);
+            volley.getGame(world);
         }
     }
 
@@ -417,7 +419,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "item clicked: " + items);
                 ThingAction action = items.get(i);
                 Log.d(LOG_TAG, "item clicked: " + action.thing());
-                EngineVolley.getInstance(MainActivity.this).takeThing(Session.getInstance().currentId(), action.thing());
+                volley.takeThing(Session.getInstance().currentId(), action.thing());
 
             }
         });
@@ -432,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "item clicked: " + items);
                 ThingAction action = items.get(i);
                 Log.d(LOG_TAG, "item clicked: " + action.thing());
-                EngineVolley.getInstance(MainActivity.this).dropThing(Session.getInstance().currentId(), action.thing());
+                volley.dropThing(Session.getInstance().currentId(), action.thing());
 
             }
         });
@@ -451,7 +453,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "item clicked: " + items);
                 Suggestion suggestion = items.get(i);
                 Log.d(LOG_TAG, "item clicked: " + suggestion.phrase());
-                EngineVolley.getInstance(MainActivity.this).getSituation(Session.getInstance().currentId(), suggestion.phrase());
+                volley.getSituation(Session.getInstance().currentId(), suggestion.phrase());
 
             }
         });
@@ -594,21 +596,19 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } else if (id == R.id.action_web) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            EngineVolley ev = EngineVolley.getInstance(this);
-            intent.setData(Uri.parse((ev.webUrl(Session.getInstance().currentId()))));
+            intent.setData(Uri.parse((volley.webUrl(Session.getInstance().currentId()))));
             startActivity(intent);
             return true;
         } else if (id == R.id.action_copy) {
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_TEXT, (EngineVolley.getInstance(this).webUrl(Session.getInstance().currentId())));
+            intent.putExtra(Intent.EXTRA_TEXT, (volley.webUrl(Session.getInstance().currentId())));
             intent.setType("text/plain");
             startActivity(intent);
             return true;
         } else if (id == R.id.action_web_admin) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            EngineVolley ev = EngineVolley.getInstance(this);
-            intent.setData(Uri.parse((ev.webAdminUrl(Session.getInstance().currentId()))));
+            intent.setData(Uri.parse((volley.webAdminUrl(Session.getInstance().currentId()))));
             startActivity(intent);
             return true;
         } else if (id == R.id.action_email) {
@@ -628,7 +628,7 @@ public class MainActivity extends AppCompatActivity {
                 subject = "A link to " + Session.getInstance().currentWorld + " (a LifeGame)";
                 message = "Hi!\nJust wanted to say that I am playing a LifeGame called \"" +
                         Session.getInstance().currentWorld + "\" (" + Session.getInstance().subTitle() + ")\n" +
-                        "\n\nHere's a link: " + EngineVolley.getInstance(this).webUrl(Session.getInstance().currentId()) +
+                        "\n\nHere's a link: " + volley.webUrl(Session.getInstance().currentId()) +
                         "\n\nCheck out all the games at: http://life.juneday.se";
             }
 
