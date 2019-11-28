@@ -18,9 +18,6 @@
 package se.juneday;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.io.File;
 
 import java.io.FileInputStream;
@@ -42,7 +39,7 @@ public class ObjectCache<T> {
     private long maxDiff = (60 * 60 * 1000);
     private long cacheTime;
 
-    static enum ExitStatus {
+    enum ExitStatus {
         OC_OK(0),
         OC_CLASS_NOT_FOUND(1);
 
@@ -50,7 +47,7 @@ public class ObjectCache<T> {
             this.status = status;
         }
 
-        private int status;
+        private final int status;
 
         int status() {
             return status;
@@ -226,7 +223,7 @@ public class ObjectCache<T> {
      */
     public void timeout(long t) {
         if (t < 0) {
-            throw new IllegalArgumentException("Timeout can't be set to lezz than zero. " + t + " not valid");
+            throw new IllegalArgumentException("Timeout can't be set to less than zero. " + t + " not valid");
         }
         maxDiff = t;
     }
