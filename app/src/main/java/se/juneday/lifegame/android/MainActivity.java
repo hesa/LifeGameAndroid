@@ -203,6 +203,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+
     private void registerListener() {
         Log.d(LOG_TAG, " register listener");
         volley.setSituationChangeListener(new EngineVolley.SituationChangeListener() {
@@ -213,17 +215,8 @@ public class MainActivity extends AppCompatActivity {
                 if (situation != null) {
                     Log.d(LOG_TAG, "new situation: " + situation.gameTitle() + "  " + situation.title());
                     setTextFields(situation.title(), situation.description());
-                    // Very type safe ;)
 
-                    List<String> suggestions = new ArrayList<>();
-                    for (Suggestion suggestion : situation.suggestions()) {
-                        suggestions.add(suggestion.toString());
-                    }
-
-                    fillListView(R.id.suggestions_view, R.id.suggestions_title_view, situation.question(), suggestions);
-//                    fillListView(R.id.suggestions_view, R.id.suggestions_title_view, situation.question(), (List<String>) (List) situation.suggestions());
-//                fillListView(R.id.my_things_list, R.id.my_things_title_view, "Saker", (List<String>)(List)situation.things());
-
+                    fillListView(R.id.suggestions_view, R.id.suggestions_title_view, situation.question(), suggestionsToStrings(situation.suggestions()));
 
                     Log.d(LOG_TAG, "resgisterListener()  save:  " + situation.gameTitle() + " | " + situation.gameId());
                     Session.getInstance().saveId(situation.gameTitle(), situation.gameId(), situation.millisLeft());
@@ -410,6 +403,14 @@ public class MainActivity extends AppCompatActivity {
         return actions;
     }
 
+    private List<String> suggestionsToStrings(List<Suggestion> items) {
+        List<String> suggestions = new ArrayList<>();
+        for (Suggestion suggestion : items) {
+            suggestions.add(suggestion.toString());
+        }
+    }
+
+
     private void fillActionView(final List<ThingAction> items) {
         ListView listView = fillListView(R.id.room_things_list, R.id.room_things_title_view, getString(R.string.room_tings_title), actionsToStrings(items));
         listView.setOnItemClickListener(new ListView.OnItemClickListener() {
@@ -441,11 +442,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void fillSuggestionView(String question, final List<Suggestion> items) {
-        List<String> suggestions = new ArrayList<>();
-        for (Suggestion suggestion : items) {
-            suggestions.add(suggestion.toString());
-        }
-        ListView listView = fillListView(R.id.suggestions_view, R.id.suggestions_title_view, question, suggestions);
+        ListView listView = fillListView(R.id.suggestions_view, R.id.suggestions_title_view, question, suggestionsToStrings(items));
         listView.setOnItemClickListener(new ListView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
