@@ -408,6 +408,7 @@ public class MainActivity extends AppCompatActivity {
         for (Suggestion suggestion : items) {
             suggestions.add(suggestion.toString());
         }
+        return suggestions;
     }
 
 
