@@ -27,9 +27,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 
-import android.speech.tts.TextToSpeech;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -44,10 +42,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
+import java.util.Objects;
 
 import se.juneday.ObjectCache;
 import se.juneday.Session;
@@ -59,7 +55,6 @@ import se.juneday.lifegame.domain.ThingAction;
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private ArrayAdapter<String> adapter;
     private String worldTitle;
 
     // TODO: remove the var below
@@ -111,24 +106,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupWorld(EngineVolley.GameInfo giFromBundle) {
 //        cache = new ObjectCache<>(Session.class);
-        String fileName = null;
+        String fileName;
 
         // read Session object from cache
         try {
             fileName = AndroidObjectCacheHelper.objectCacheFileName(this, Session.class);
-            Log.d(LOG_TAG, "HESA onStart()  cache file: " + fileName);
+            Log.d(LOG_TAG, "onStart()  cache file: " + fileName);
             cache = new ObjectCache<>(fileName);
-            Log.d(LOG_TAG, "HESA onStart()  cache     : " + cache);
+            Log.d(LOG_TAG, "onStart()  cache     : " + cache);
             Session.instance(cache.readObject());
-            Log.d(LOG_TAG, "HESA onStart()  session   : " + Session.getInstance());
+            Log.d(LOG_TAG, "onStart()  session   : " + Session.getInstance());
         } catch (AndroidObjectCacheHelper.AndroidObjectCacheHelperException e) {
             e.printStackTrace();
         }
 
         if (Session.getInstance() != null) {
-            Log.d(LOG_TAG, "HESA onStart()  cache gameId: " + Session.getInstance().currentId());
+            Log.d(LOG_TAG, "onStart()  cache gameId: " + Session.getInstance().currentId());
         } else {
-            Log.d(LOG_TAG, "HESA onStart()  creating session object");
+            Log.d(LOG_TAG, "onStart()  creating session object");
             Session.instance(new Session());
         }
         Log.d(LOG_TAG, "session object: " + Session.getInstance());
@@ -200,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onResume() {
         super.onResume();
-        Log.d(LOG_TAG, "HESA onResume()  gameId: " + Session.getInstance().currentId());
+        Log.d(LOG_TAG, "onResume()  gameId: " + Session.getInstance().currentId());
         if (! bundleSupplied) {
             currentSituation();
         }
@@ -213,20 +208,27 @@ public class MainActivity extends AppCompatActivity {
             public void onSituationChangeList(Situation situation) {
                 winHolder = null;
                 Log.d(LOG_TAG, "new json: " + situation);
-                Log.d(LOG_TAG, "new situation: " + situation.gameTitle() + "  " + situation.title());
                 if (situation != null) {
+                    Log.d(LOG_TAG, "new situation: " + situation.gameTitle() + "  " + situation.title());
                     setTextFields(situation.title(), situation.description());
                     // Very type safe ;)
-                    fillListView(R.id.suggestions_view, R.id.suggestions_title_view, situation.question(), (List<String>) (List) situation.suggestions());
+
+                    List<String> suggestions = new ArrayList<>();
+                    for (Suggestion suggestion : situation.suggestions()) {
+                        suggestions.add(suggestion.toString());
+                    }
+
+                    fillListView(R.id.suggestions_view, R.id.suggestions_title_view, situation.question(), suggestions);
+//                    fillListView(R.id.suggestions_view, R.id.suggestions_title_view, situation.question(), (List<String>) (List) situation.suggestions());
 //                fillListView(R.id.my_things_list, R.id.my_things_title_view, "Saker", (List<String>)(List)situation.things());
 
 
-                    Log.d(LOG_TAG, "HESA resgisterListener()  save:  " + situation.gameTitle() + " | " + situation.gameId());
+                    Log.d(LOG_TAG, "resgisterListener()  save:  " + situation.gameTitle() + " | " + situation.gameId());
                     Session.getInstance().saveId(situation.gameTitle(), situation.gameId(), situation.millisLeft());
-                    Log.d(LOG_TAG, "HESA resgisterListener()  saved: " + Session.getInstance().currentWorld + " | " + Session.getInstance().currentId());
+                    Log.d(LOG_TAG, "resgisterListener()  saved: " + Session.getInstance().currentWorld + " | " + Session.getInstance().currentId());
 
-                    Log.d(LOG_TAG, "HESA resgisterListener()  cache     : " + cache);
-                    Log.d(LOG_TAG, "HESA resgisterListener()  session   : " + Session.getInstance());
+                    Log.d(LOG_TAG, "resgisterListener()  cache     : " + cache);
+                    Log.d(LOG_TAG, "resgisterListener()  session   : " + Session.getInstance());
                     cache.storeObject(Session.getInstance());
                     String explanation = situation.explanation();
                     if (explanation != null && !explanation.equals("")) {
@@ -235,11 +237,11 @@ public class MainActivity extends AppCompatActivity {
                     worldTitle = situation.gameTitle();
 
                     updateToolbarTitle();
-                    fillActionView((List<String>) (List) situation.actions());
-                    fillThingView(((List<String>) (List) situation.things()));
-                    fillSuggestionView(situation.question(), (List<String>) (List) situation.suggestions());
+                    fillActionView(situation.actions());
+                    fillThingView(situation.things());
+                    fillSuggestionView(situation.question(), situation.suggestions());
                     lastSituation = situation;
-                    Log.d(LOG_TAG, "HESA resgisterListener() (jsonToSi) save:  " + situation.gameTitle() + " | " + situation.score() + " | " + lastSituation.score());
+                    Log.d(LOG_TAG, "resgisterListener() (jsonToSi) save:  " + situation.gameTitle() + " | " + situation.score() + " | " + lastSituation.score());
                 } else {
                     showExplanation("Failed to retrieve data from server.");
                 }
@@ -257,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
                 winHolder = new WinInformationHolder();
                 winHolder.gameTitle = lastSituation.gameTitle();
                 winHolder.gameSubTitle = lastSituation.gameSubTitle();
-                winHolder.message = message;
+              //  winHolder.message = message;
                 showWin(message);
                 Session.getInstance().removeCurrentGame();
             }
@@ -320,11 +322,12 @@ public class MainActivity extends AppCompatActivity {
         updateToolbarTitle();
     }
 
-    private void exitGame(String gameId) {
+/*    private void exitGame(String gameId) {
         EngineVolley.getInstance(this).exitGame(gameId);
         worldTitle = null;
         updateToolbarTitle();
     }
+*/
 
     private void startNewGame(String world) {
         Log.d(LOG_TAG, "startNewGame(" + world + ")");
@@ -339,9 +342,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateToolbarTitle() {
         if (worldTitle != null) {
-            Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar);
+            Toolbar mActionBarToolbar = findViewById(R.id.toolbar);
             setSupportActionBar(mActionBarToolbar);
-            getSupportActionBar().setTitle(getResources().getString(R.string.app_name) + " - " + worldTitle);
+            Objects.requireNonNull(getSupportActionBar()).setTitle(getResources().getString(R.string.app_name) + " - " + worldTitle);
         }
     }
 
@@ -375,6 +378,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "onBackPressed()");
     }
 
+
+
     private void initViews() {
         // Title
         setText(R.id.world_view, "");
@@ -395,14 +400,22 @@ public class MainActivity extends AppCompatActivity {
         tv.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    private void fillActionView(final List<String> items) {
-        ListView listView = fillListView(R.id.room_things_list, R.id.room_things_title_view, getString(R.string.room_tings_title), items);
+    private List<String> actionsToStrings(List<ThingAction> items) {
+        List<String> actions = new ArrayList<>();
+        for (ThingAction item : items) {
+            actions.add(item.toString());
+        }
+        return actions;
+    }
+
+    private void fillActionView(final List<ThingAction> items) {
+        ListView listView = fillListView(R.id.room_things_list, R.id.room_things_title_view, getString(R.string.room_tings_title), actionsToStrings(items));
         listView.setOnItemClickListener(new ListView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Log.d(LOG_TAG, "item clicked, pos:" + i + " id: " + l);
                 Log.d(LOG_TAG, "item clicked: " + items);
-                ThingAction action = (ThingAction) (Object) items.get(i);
+                ThingAction action = items.get(i);
                 Log.d(LOG_TAG, "item clicked: " + action.thing());
                 EngineVolley.getInstance(MainActivity.this).takeThing(Session.getInstance().currentId(), action.thing());
 
@@ -410,14 +423,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void fillThingView(final List<String> items) {
-        ListView listView = fillListView(R.id.my_things_list, R.id.my_things_title_view, getString(R.string.your_things_title), items);
+    private void fillThingView(final List<ThingAction> items) {
+        ListView listView = fillListView(R.id.my_things_list, R.id.my_things_title_view, getString(R.string.your_things_title), actionsToStrings(items));
         listView.setOnItemClickListener(new ListView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Log.d(LOG_TAG, "item clicked, pos:" + i + " id: " + l);
                 Log.d(LOG_TAG, "item clicked: " + items);
-                ThingAction action = (ThingAction) (Object) items.get(i);
+                ThingAction action = items.get(i);
                 Log.d(LOG_TAG, "item clicked: " + action.thing());
                 EngineVolley.getInstance(MainActivity.this).dropThing(Session.getInstance().currentId(), action.thing());
 
@@ -425,14 +438,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void fillSuggestionView(String question, final List<String> items) {
-        ListView listView = fillListView(R.id.suggestions_view, R.id.suggestions_title_view, question, items);
+    private void fillSuggestionView(String question, final List<Suggestion> items) {
+        List<String> suggestions = new ArrayList<>();
+        for (Suggestion suggestion : items) {
+            suggestions.add(suggestion.toString());
+        }
+        ListView listView = fillListView(R.id.suggestions_view, R.id.suggestions_title_view, question, suggestions);
         listView.setOnItemClickListener(new ListView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Log.d(LOG_TAG, "item clicked, pos:" + i + " id: " + l);
                 Log.d(LOG_TAG, "item clicked: " + items);
-                Suggestion suggestion = (Suggestion) (Object) items.get(i);
+                Suggestion suggestion = items.get(i);
                 Log.d(LOG_TAG, "item clicked: " + suggestion.phrase());
                 EngineVolley.getInstance(MainActivity.this).getSituation(Session.getInstance().currentId(), suggestion.phrase());
 
@@ -447,8 +464,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static int textSize(Context c) {
-        int dp = (int) (c.getResources().getDimension(R.dimen.app_text_size) / c.getResources().getDisplayMetrics().density);
-        return dp;
+        return (int) (c.getResources().getDimension(R.dimen.app_text_size) / c.getResources().getDisplayMetrics().density);
     }
 
     private ListView fillListView(int id, int titleId, String title, List<String> items) {
@@ -461,7 +477,8 @@ public class MainActivity extends AppCompatActivity {
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSize(this));
 
         // Create Adapter
-        adapter = new ArrayAdapter<String>(this,
+        ArrayAdapter<String> adapter;
+        adapter = new ArrayAdapter<>(this,
                 R.layout.list_item/*android.R.layout.simple_list_item_1*/,
                 items);
 
@@ -608,7 +625,7 @@ public class MainActivity extends AppCompatActivity {
                         "... and I won!!\n\n" +
                         "Check out all the games at: http://life.juneday.se";
             } else {
-                subject = "A weblink to " + Session.getInstance().currentWorld + " (a LifeGame)";
+                subject = "A link to " + Session.getInstance().currentWorld + " (a LifeGame)";
                 message = "Hi!\nJust wanted to say that I am playing a LifeGame called \"" +
                         Session.getInstance().currentWorld + "\" (" + Session.getInstance().subTitle() + ")\n" +
                         "\n\nHere's a link: " + EngineVolley.getInstance(this).webUrl(Session.getInstance().currentId()) +
@@ -620,7 +637,7 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(Intent.EXTRA_SUBJECT, subject);
             intent.putExtra(Intent.EXTRA_TEXT, message );
             startActivity(Intent.createChooser(intent, "Send email..."));
-            EngineVolley ev = EngineVolley.getInstance(this);
+            //EngineVolley ev = EngineVolley.getInstance(this);
             startActivity(intent);
 
             Log.d(LOG_TAG, "email: subject" + subject);
@@ -680,8 +697,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "onOptionsItemSelected()   -------------------------------- ");
         }
 
-        //noinspection SimplifiableIfStatement
-/*        if (id == R.id.action_settings) {
+        /*noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
             return true;
         }
 */
@@ -690,9 +707,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private class WinInformationHolder {
-        public String gameTitle;
-        public String gameSubTitle;
-        public String message;
+        String gameTitle;
+        String gameSubTitle;
+      //  String message;
     }
 
 }
