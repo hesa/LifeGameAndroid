@@ -26,7 +26,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
@@ -35,11 +34,9 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import se.juneday.Session;
 import se.juneday.lifegame.domain.Situation;
 import se.juneday.lifegame.domain.Suggestion;
 import se.juneday.lifegame.domain.ThingAction;
@@ -47,16 +44,16 @@ import se.juneday.lifegame.domain.ThingAction;
 public class EngineVolley {
 
     private static final String LOG_TAG = EngineVolley.class.getSimpleName();
-    private Context context;
+    private final Context context;
  //   private static EngineVolley instance;
     private SituationChangeListener listener;
 
-   private String baseUrl = "http://10.0.2.2:8080";
+   private final String baseUrl = "http://10.0.2.2:8080";
 //    private String baseUrl = "http://192.168.1.138:8080";
 //    private String baseUrl = "http://rameau.sandklef.com:8081";
-    private String gameUrl = "lifegame";
-    private String formatUrl = "format=json";
-    private String URL_SEP = "/";
+    private final String gameUrl = "lifegame";
+    private final String formatUrl = "format=json";
+    private final String URL_SEP = "/";
 
 //    private String gameId;
 
@@ -104,27 +101,27 @@ public class EngineVolley {
         return baseUrl(gameId) + "&" + formatUrl;
     }
 
-    private String suggestionUrl(String suggestion, String gameId) throws UnsupportedEncodingException {
+    private String suggestionUrl(String suggestion, String gameId) {
         return formatUrl(gameId) + "&suggestion=" + suggestion;
     }
 
-    private String currentUrl(String gameId) throws UnsupportedEncodingException {
+    private String currentUrl(String gameId) {
         return formatUrl(gameId) + "&action=current";
     }
 
-    private String newGameUrl(String world) throws UnsupportedEncodingException {
+    private String newGameUrl(String world) {
         return baseUrl + URL_SEP + gameUrl + "?" + formatUrl + "&world=" + world;
     }
 
-    private String takeThingUrl(String gameId, String thing) throws UnsupportedEncodingException {
+    private String takeThingUrl(String gameId, String thing) {
         return formatUrl(gameId) + "&pickup=" + thing;
     }
 
-    private String dropThingUrl(String gameId, String thing) throws UnsupportedEncodingException {
+    private String dropThingUrl(String gameId, String thing) {
         return formatUrl(gameId) + "&drop=" + thing;
     }
 
-    private String gamesUrl() throws UnsupportedEncodingException {
+    private String gamesUrl() {
         return baseUrl + URL_SEP + gameUrl + "?worlds=true&format=json";
     }
 
@@ -136,7 +133,7 @@ public class EngineVolley {
         Log.d(LOG_TAG, "exitGame: " + gameId);
         Log.d(LOG_TAG, "exitGame: " + exitUrl(gameId));
         RequestQueue queue = Volley.newRequestQueue(context);
-        JsonObjectRequest jsonObjectRequest = null;
+        JsonObjectRequest jsonObjectRequest;
         jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
                 exitUrl(gameId),
@@ -159,18 +156,12 @@ public class EngineVolley {
     }
 
     public void getGames() {
-        String url = null;
+        String url;
         Log.d(LOG_TAG, "getGames()   ");
-        try {
-            url = gamesUrl();
-            Log.d(LOG_TAG, "getGames()   url: " + gamesUrl());
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            listener.onError("Failed to create url");
-            return;
-        }
+        url = gamesUrl();
+        Log.d(LOG_TAG, "getGames()   url: " + gamesUrl());
         RequestQueue queue = Volley.newRequestQueue(context);
-        JsonArrayRequest jsonArrayRequest = null;
+        JsonArrayRequest jsonArrayRequest;
         jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
@@ -196,33 +187,22 @@ public class EngineVolley {
 
     public void currentSituation(String gameId) {
         Log.d(LOG_TAG, "currentSituation()");
-        String url = null;
-        try {
-            url = currentUrl(gameId);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            listener.onError("Failed to create url");
-            return;
-        }
+        String url;
+        url = currentUrl(gameId);
         getData(url);
     }
 
     public void getSituation(String gameId, String suggestion) {
         Log.d(LOG_TAG, "getSituation(" + suggestion + ", " + gameId + ")");
-        String url = null;
-        try {
-            url = suggestionUrl(suggestion, gameId);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            listener.onError("Failed to create url");
-        }
+        String url;
+        url = suggestionUrl(suggestion, gameId);
         getData(url);
     }
 
 
-    public void getData(String url) {
+    private void getData(String url) {
         RequestQueue queue = Volley.newRequestQueue(context);
-        JsonObjectRequest jsonObjectRequest = null;
+        JsonObjectRequest jsonObjectRequest;
         Log.d(LOG_TAG, "url: " + url);
         jsonObjectRequest = new JsonObjectRequest(
                 Request.Method.GET,
@@ -245,7 +225,7 @@ public class EngineVolley {
         queue.add(jsonObjectRequest);
     }
 
-    public List<Suggestion> jsonToSuggestions(JSONArray jarray) {
+    private List<Suggestion> jsonToSuggestions(JSONArray jarray) {
         Log.d(LOG_TAG, "Adding suggestion: " + jarray);
         try {
             List<Suggestion> suggestions = new ArrayList<>();
@@ -262,7 +242,7 @@ public class EngineVolley {
         return null;
     }
 
-    public List<GameInfo> jsonToGames(JSONArray jarray) {
+    private List<GameInfo> jsonToGames(JSONArray jarray) {
         Log.d(LOG_TAG, "Adding games ---- " + jarray);
         try {
             List<GameInfo> games = new ArrayList<>();
@@ -283,17 +263,13 @@ public class EngineVolley {
         return null;
     }
 
-    public List<ThingAction> jsonToThings(JSONObject jo, String tag) {
-        JSONArray jarray = null;
+    private List<ThingAction> jsonToThings(JSONObject jo, String tag) {
+        JSONArray jarray;
         try {
             jarray = jo.getJSONArray(tag);
         } catch (JSONException je) {
             Log.d(LOG_TAG, "jsonToString, failed getting array from  jo:" + jo + " tag:" + tag);
-            return new ArrayList<ThingAction>();
-        }
-
-        if (jarray == null) {
-            return new ArrayList<ThingAction>();
+            return new ArrayList<>();
         }
 
         try {
@@ -312,7 +288,7 @@ public class EngineVolley {
     }
 
 
-    public Situation jsonToSituation(JSONObject response) throws JSONException {
+    private Situation jsonToSituation(JSONObject response) throws JSONException {
 //     public Situation(String title, String description, String question, List<Suggestion> suggestions, List<ThingAction> actions) {
         String gameTitle = jsonToString(response, "gametitle");
         String gameSubTitle = jsonToString(response, "gamesubtitle");
@@ -405,6 +381,7 @@ public class EngineVolley {
         if (handleError(response, listener) != null) {
             Log.d(LOG_TAG, " response: handled error");
             Log.d(LOG_TAG, "Found error....");
+            // not needed - but feels more in line with the above code
             return;
         }
     }
@@ -420,40 +397,28 @@ public class EngineVolley {
 
     public void getGame(String world) {
         Log.d(LOG_TAG, "getGame(" + world + ")    world: " + world);
-        try {
-            String url = newGameUrl(world);
-            getData(url);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        String url = newGameUrl(world);
+        getData(url);
     }
 
     public void takeThing(String gameId, String thing) {
         Log.d(LOG_TAG, "takeThing(" + thing + ")");
-        try {
-            String url = takeThingUrl(gameId, thing);
-            getData(url);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        String url = takeThingUrl(gameId, thing);
+        getData(url);
     }
 
     public void dropThing(String gameId, String thing) {
         Log.d(LOG_TAG, "dropThing(" + thing + ")");
-        try {
-            String url = dropThingUrl(gameId, thing);
-            getData(url);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        String url = dropThingUrl(gameId, thing);
+        getData(url);
     }
 
 
     public static class GameInfo implements Serializable {
         private static final long serialVersionUID = -5098838482768516652L;
-        public String title;
-        public String subTitle;
-        public String url;
+        public final String title;
+        public final String subTitle;
+        public final String url;
 
         public GameInfo(String title, String subTitle, String url) {
             this.title = title;
