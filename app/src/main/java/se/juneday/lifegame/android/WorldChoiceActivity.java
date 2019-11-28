@@ -21,9 +21,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -31,16 +28,15 @@ import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.Objects;
 
 import se.juneday.Session;
 
@@ -48,7 +44,6 @@ public class WorldChoiceActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = WorldChoiceActivity.class.getSimpleName();
     private List<EngineVolley.GameInfo> games;
-    private WorldListAdapter adapter;
 
 
     @Override
@@ -66,9 +61,8 @@ public class WorldChoiceActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
-        Toolbar mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(mActionBarToolbar);
-        getSupportActionBar().setTitle(getResources().getString(R.string.app_name) + " - " + getResources().getString(R.string.world_act_name) );
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(getResources().getString(R.string.app_name) + " - " + getResources().getString(R.string.world_act_name) );
 
     }
 
@@ -84,7 +78,7 @@ public class WorldChoiceActivity extends AppCompatActivity {
         }
         Log.d(LOG_TAG, "onStart()  session is: " + session);
 
-        this.games = session.games();
+        this.games = Objects.requireNonNull(session).games();
         if (session.games() != null) {
             Log.d(LOG_TAG, "onStart()  add items");
             for (EngineVolley.GameInfo gi : session.games()) {
@@ -96,7 +90,7 @@ public class WorldChoiceActivity extends AppCompatActivity {
     }
 
 
-    private ListView fillListView(final List<EngineVolley.GameInfo> items) {
+    private void fillListView(final List<EngineVolley.GameInfo> items) {
 
         ListView listView = findViewById(R.id.world_list);
 
@@ -117,8 +111,7 @@ public class WorldChoiceActivity extends AppCompatActivity {
             }
         };;  // Ugly hack :(
 */
-        adapter = new WorldListAdapter(this,
-                R.layout.world_list_item,
+        WorldListAdapter adapter = new WorldListAdapter(this,
                 items);
 
         // Set listView's adapter to the new adapter
@@ -139,15 +132,14 @@ public class WorldChoiceActivity extends AppCompatActivity {
             }
         });
 
-        return listView;
     }
 
     class WorldListAdapter extends ArrayAdapter<EngineVolley.GameInfo> {
 
         private final Activity context;
-        private List<EngineVolley.GameInfo> items;
+        private final List<EngineVolley.GameInfo> items;
 
-        public WorldListAdapter(Activity context, int id, List<EngineVolley.GameInfo> items) {
+        WorldListAdapter(Activity context, List<EngineVolley.GameInfo> items) {
             super(context, R.layout.world_list_item, items);
             this.context = context;
             this.items = items;
@@ -156,15 +148,16 @@ public class WorldChoiceActivity extends AppCompatActivity {
         public View getView(int position, View view, ViewGroup parent) {
             LayoutInflater inflater=context.getLayoutInflater();
 
+            // TODO: use ViewHolder pattern
             View rowView=inflater.inflate(R.layout.world_list_item, null,true);
-            TextView tv = (TextView) rowView.findViewById(R.id.world_item);
+            TextView tv = rowView.findViewById(R.id.world_item);
 
             EngineVolley.GameInfo gi = items.get(position);
             tv.setText(Html.fromHtml("<b>" +  gi.title + "</b><br><i>" + gi.subTitle + "</i>"));
 
             return rowView;
 
-        };
+        }
 
     }
 
